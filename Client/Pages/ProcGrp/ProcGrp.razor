@@ -1,0 +1,205 @@
+﻿@page "/auditscenarioconnection/procgrp"
+
+@using QC.Shared.Models
+
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject IJSRuntime JsRuntime
+@using System.Text;
+@using System.Text.Json;
+@using System.Net.Http.Headers
+
+
+<h3>Data ProcGrp</h3>
+
+<ul class="nav justify-content-center">
+    <li class="nav-item">
+        <a class="nav-link" href="/auditscenarioconnection">AuditScenarioConnection</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/auditscenarioconnection/matlgrpdef">MatlGrpDef</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/auditscenarioconnection/procgrp">ProcGrp</a>
+    </li>
+</ul>
+
+<button class="btn btn-primary" @onclick="@(() => AddProcGrp())">Add</button>
+
+@if (procGrps == null)
+{
+    <text>Loading...</text>
+}
+else
+{
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th>ProcGrpUid</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Deleted</th>
+                <th>RevDate</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in procGrps)
+            {
+                <tr>
+                    <td>@item.ProcGrpUid</td>
+                    <td>@item.Name</td>
+                    <td>@item.Description</td>
+                    <td>@item.Deleted</td>
+                    <td>@item.RevDate</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="@(() => EditProcGrp(item))">Edit</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="@(() => DeleteProcGrp(item))">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<ModalDialog @ref="@EditModalDialog" Title="Edit ProcGrp">
+    <EditForm Model="@procGrp">
+        <div class="row">
+            <h3>Edit</h3>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Name">Name</label>
+                    <input type="text" class="form-control" id="Name" @bind="@procGrp.Name" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Description">Description</label>
+                    <input type="text" class="form-control" id="Description" @bind="@procGrp.Description" />
+                </div>
+            </div>
+        </div>
+        <div class="col-mb-4 mb-2">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Deleted">Deleted</label>
+                    <input type="checkbox" id="Deleted" @bind="@procGrp.Deleted"></input>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <button class="btn btn-primary" @onclick="@(() => UpdateProcGrp())">Update</button>
+            </div>
+        </div>
+    </EditForm>
+</ModalDialog>
+
+<ModalDialog @ref="@AddModalDialog" Title="Add ProcGrp">
+    <div class="row">
+        <h3>Add</h3>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Name">Name</label>
+                <input type="text" class="form-control" id="Name" @bind="@procGrp.Name" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Description">Description</label>
+                <input type="text" class="form-control" id="Description" @bind="@procGrp.Description" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <button class="btn btn-primary" @onclick="@(() => AddProcGrps())">Add</button>
+        </div>
+    </div>
+</ModalDialog>
+
+@code {
+
+    private TblProcGrp procGrp = new TblProcGrp();
+    private List<TblProcGrp> procGrps = new List<TblProcGrp>();
+
+    private ModalDialog EditModalDialog { get; set; }
+    private ModalDialog AddModalDialog { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        procGrps = await Http.GetFromJsonAsync<List<TblProcGrp>>("api/TblProcGrp");
+    }
+
+    private async Task AddProcGrp()
+    {
+        procGrp = new TblProcGrp();
+        await AddModalDialog.Open();
+
+    }
+
+    private async Task EditProcGrp(TblProcGrp procGrp)
+    {
+        this.procGrp = procGrp;
+        await EditModalDialog.Open();
+    }
+
+    private async Task AddProcGrps()
+    {
+
+        await Http.PostAsJsonAsync("api/TblProcGrp", procGrp);
+        procGrps = await Http.GetFromJsonAsync<List<TblProcGrp>>("api/TblProcGrp");
+        AddModalDialog.Close();
+        StateHasChanged();
+
+    }
+
+
+    private async Task UpdateProcGrp()
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to update {procGrp.Name}?");
+
+        if (confirmed)
+        {
+            await JsRuntime.InvokeAsync<object>("alert", "Edit success");
+            await Http.PutAsJsonAsync("api/TblProcGrp", procGrp);
+            procGrps = await Http.GetFromJsonAsync<List<TblProcGrp>>("api/TblProcGrp");
+            EditModalDialog.Close();
+            StateHasChanged();
+        }
+        else
+        {
+            await JsRuntime.InvokeAsync<object>("alert", "Edit failed");
+        }
+    }
+
+
+
+    private async Task DeleteProcGrp(TblProcGrp item)
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+
+        if (confirmed)
+        {
+            await Http.DeleteAsync($"api/TblProcGrp/{item.ProcGrpUid}");
+            await JsRuntime.InvokeAsync<object>("alert", "Delete success");
+            procGrps = await Http.GetFromJsonAsync<List<TblProcGrp>>("api/TblProcGrp");
+            StateHasChanged();
+        }
+        else
+        {
+            await JsRuntime.InvokeAsync<object>("alert", "Delete failed");
+        }
+    }
+}

@@ -1,0 +1,413 @@
+﻿@page "/scenario/edit/{Id:int}"
+
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject IJSRuntime JsRuntime
+@inject ToasterService toasterservice
+
+
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Edit AuditScenario</h4>
+                <button class="btn btn-primary col-mb-4 mb-2" @onclick="AuditScenario">AuditScenario</button>
+            </div>
+            <div class="card-body">
+                <form>
+                    <EditForm Model="@auditScenario" OnValidSubmit="@HandleValidSubmit" class="col-mb-4 mb-2">
+                        <DataAnnotationsValidator />
+                        <div class="mb-2">
+
+                        <th class="mb-2">
+                            <label for="Name">Name</label>
+                            <InputText class="form-control" id="Name" @bind-Value="@auditScenario.Name" />
+                            <ValidationMessage For="@(() => auditScenario.Name)" />
+                        </th>
+
+                        <th>
+                            <label for="Description">Description</label>
+                            <InputText class="form-control" id="Description" @bind-Value="@auditScenario.Description" />
+                            <ValidationMessage For="@(() => auditScenario.Description)" />
+                        </th>
+
+                        <th class=" mb-2">
+                            <label for="Name">Name</label>
+                            <InputSelect typeof="number" class="form-select" aria-label="example" @bind-Value=@auditScenario.AuditTypeUid>
+                                    @foreach (var select in auditTypes)
+                                    {
+                                    <option value="@select.AuditTypeUid">@select.Name</option>
+                                    }
+                            </InputSelect>
+                        </th>
+
+                        <th class=" mb-2">
+                            <label for="Deleted">Deleted</label>
+                            <InputCheckbox id="Deleted" @bind-Value="@auditScenario.Deleted"></InputCheckbox>
+                        </th>
+
+
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <button class="btn btn-primary" @onclick="@(() => UpdateAuditScenario())">Update</button>
+                </div>
+            </div>
+            </EditForm>
+
+            </form>
+        </div>
+    </div>
+</div>
+ </div>
+
+
+<ModalDialog @ref="@AddModalDialog" Title="Add AuditData">
+    <EditForm Model="auditData">
+        <div class="row">
+            <h3>Add</h3>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Name">Name Audit Scenario</label>
+                    <InputSelect typeof="number" class="form-select" aria-label="example" @bind-Value=@auditData.AuditScenarioUid>
+                        <option value="0" selected>No current item</option>
+                        @foreach (var select in auditScenarios)
+                        {
+                            <option value="@select.AuditScenarioUid">@select.Name</option>
+                        }
+                    </InputSelect>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Name">Name Audit Article</label>
+                    <InputSelect typeof="number" class="form-select" aria-label="example" @bind-Value=@auditData.AuditArticleDefUid>
+                        <option value="0" selected>No current item</option>
+                        @foreach (var select in auditArticleDefs)
+                        {
+                            <option value="@select.AuditArticleDefUid">@select.Name</option>
+                        }
+                    </InputSelect>
+                </div>
+            </div>
+        </div>
+        <div class="row col-mb-4 mb-2">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Order">Order</label>
+                    <InputNumber class="form-control" id="Order" @bind-Value="@auditData.Order" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <button class="btn btn-primary" @onclick="@(() => AddAuditDat())">Add</button>
+            </div>
+        </div>
+    </EditForm>
+</ModalDialog>
+
+
+<div class="row md-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Audit Data</h4>
+                <button class="btn btn-primary col-mb-4 mb-2" @onclick="@(() => AddAuditData())">Add</button>
+                <button class="btn btn-dark col-mb-4 mb-2" @onclick="@Show">Show/Hide</button>
+                <div class="card-body" hidden="@IsShow">
+                    <form>
+                        <table class="table  table-sm table-bordered align-middle text-md-center table-responsive col-mb-4 mb-2">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Audit Scenario</th>
+                                    <th>Audit ArticleDef</th>
+                                    <th>Order</th>
+                                    <th>RevDate</th>
+                                    <th>Buttons</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in auditDatas.Where(x => IsVisible(x)))
+                                {
+
+                                    <tr>
+                                        @if (item.AuditScenarioUid != null)
+                                        {
+                                            <td>@item.AuditDataUid</td>
+                                        }
+                                        else
+                                        {
+                                            <td>NOT DATA</td>
+                                        }
+                                        @if (item.AuditScenarioUid != null)
+                                        {
+
+                                            var data = auditScenarios.FirstOrDefault(s => s.AuditScenarioUid.Equals(item.AuditScenarioUid));
+
+                                            if (data != null)
+                                            {
+                                                <td>@data.Name</td>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <td>NOT DATA</td>
+                                        }
+                                        @if (item.AuditArticleDefUid != null)
+                                        {
+
+                                            var datas = auditArticleDefs.FirstOrDefault(s => s.AuditArticleDefUid.Equals(item.AuditArticleDefUid));
+
+                                            if (datas != null)
+                                            {
+                                                <td>@datas.Name</td>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <td></td>
+                                        }
+                                        <td>@item.Order</td>
+                                        <td>@item.RevDate</td>
+                                        <td>
+                                            <button class="btn btn-danger" @onclick="@(() => DeleteAuditData(item))">Delete</button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<details>
+    <summary>Full table list</summary>
+    <form>
+        <table class="table table-sm table-bordered align-middle text-md-center table-responsive col-mb-4 mb-2">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Audit Scenario</th>
+                    <th>Audit ArticleDef</th>
+                    <th>Order</th>
+                    <th>RevDate</th>
+                    <th>Buttons</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in auditDatas)
+                {
+
+                    <tr>
+                        @if (item.AuditScenarioUid != null)
+                        {
+                            <td>@item.AuditDataUid</td>
+                        }
+                        else
+                        {
+                            <td>NOT DATA</td>
+                        }
+                        @if (item.AuditScenarioUid != null)
+                        {
+
+                            var data = auditScenarios.FirstOrDefault(s => s.AuditScenarioUid.Equals(item.AuditScenarioUid));
+
+                            if (data != null)
+                            {
+                                <td>@data.Name</td>
+                            }
+                        }
+                        else
+                        {
+                            <td>NOT DATA</td>
+                        }
+                        @if (item.AuditArticleDefUid != null)
+                        {
+
+                            var datas = auditArticleDefs.FirstOrDefault(s => s.AuditArticleDefUid.Equals(item.AuditArticleDefUid));
+
+                            if (datas != null)
+                            {
+                                <td>@datas.Name</td>
+                            }
+                        }
+                        else
+                        {
+                            <td></td>
+                        }
+                        <td>@item.Order</td>
+                        <td>@item.RevDate</td>
+                        <td>
+                            <button class="btn btn-danger" @onclick="@(() => DeleteAuditData(item))">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </form>
+</details>
+
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private TblAuditScenario auditScenario = new TblAuditScenario();
+    private List<TblAuditType> auditTypes = new List<TblAuditType>();
+    private List<TblAuditScenario> auditScenarios = new List<TblAuditScenario>();
+
+
+    private TblAuditScenario AuditScenarioUid { get; set; }
+    private TblAuditData AuditDataUid { get; set; }
+
+    private ModalDialog AddModalDialog { get; set; }
+
+    private TblAuditData auditData = new TblAuditData();
+    public TblAuditArticleDef AuditArticleDefUid = new TblAuditArticleDef();
+
+    private List<TblAuditArticleDef> auditArticleDefs = new List<TblAuditArticleDef>();
+    private List<TblAuditData> auditDatas = new List<TblAuditData>();
+
+    //Button Hide/Show
+    private bool IsShow { get; set; } = false;
+
+    private void Show()
+    {
+        IsShow = !IsShow;
+    }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        auditScenarios = await Http.GetFromJsonAsync<List<TblAuditScenario>>("api/TblAuditScenario");
+
+        auditTypes = await Http.GetFromJsonAsync<List<TblAuditType>>("api/TblAuditType");
+
+        auditDatas = await Http.GetFromJsonAsync<List<TblAuditData>>("api/TblAuditData");
+
+        auditArticleDefs = await Http.GetFromJsonAsync<List<TblAuditArticleDef>>("api/TblAuditArticleDef");
+
+    }
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        auditScenario = await Http.GetFromJsonAsync<TblAuditScenario>($"api/TblAuditScenario/{Id}");
+    }
+
+    //validation message
+    private void HandleValidSubmit()
+    {
+        Console.WriteLine("OnValidSubmit");
+    }
+
+    public async Task AuditScenario()
+    {
+        Nav.NavigateTo("/scenario");
+    }
+    //button open modalADD
+    private async Task AddAuditData()
+    {
+        auditData = new TblAuditData();
+        await AddModalDialog.Open();
+
+    }
+
+    //Filtering data oninput
+    private bool IsVisible(TblAuditData auditData)
+    {
+        if (auditData.AuditScenarioUid == auditScenario.AuditScenarioUid)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    //button add AuditData
+    private async Task AddAuditDat()
+    {
+        try
+        {
+            await Http.PostAsJsonAsync("api/TblAuditData", auditData);
+            auditDatas = await Http.GetFromJsonAsync<List<TblAuditData>>("api/TblAuditData");
+            AddModalDialog.Close();
+            toasterservice.AddToast(Toast.NewToast("Audit", "Audit Added", MessageColour.Success, 15));
+            StateHasChanged();
+        }
+        catch (Exception err)
+        {
+            toasterservice.AddToast(Toast.NewToast("Scenario", "Error: " + err.Message, MessageColour.Danger, 30));
+        }
+    }
+
+
+    //button edit scenario
+    private async Task UpdateAuditScenario()
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to update {auditScenario.Name}?");
+
+
+        if (confirmed == true)
+        {
+            if (auditScenario.Name == "" || auditScenario.Description == "" || auditScenario.Name == null || auditScenario.Description == null)
+            {
+                toasterservice.AddToast(Toast.NewToast("Scenario", "Error: Fill in the input fields ", MessageColour.Danger, 30));
+            }
+            else if (auditScenario.Name.Length <= 4 || auditScenario.Description.Length <= 4)
+            {
+                toasterservice.AddToast(Toast.NewToast("Scenario", "Error: Min length 5 symbols ", MessageColour.Danger, 30));
+            }
+            else
+            {
+                try
+                {
+                    await Http.PutAsJsonAsync($"api/TblAuditScenario/{auditScenario.AuditScenarioUid}", auditScenario);
+                    toasterservice.AddToast(Toast.NewToast("Scenario", "Scenario Updated", MessageColour.Success, 15));
+                    StateHasChanged();
+                }
+                catch (Exception err)
+                {
+                    toasterservice.AddToast(Toast.NewToast("Scenario", "Error: " + err.Message, MessageColour.Danger, 30));
+                }
+            }
+        }
+    }
+
+    //button delete AuditData
+    private async Task DeleteAuditData(TblAuditData item)
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+
+        if (confirmed)
+        {
+            try
+            {
+                await Http.DeleteAsync($"api/TblAuditData/{item.AuditDataUid}");
+                toasterservice.AddToast(Toast.NewToast("Delete Audit", "Audit Deleted", MessageColour.Success, 15));
+                auditDatas = await Http.GetFromJsonAsync<List<TblAuditData>>("api/TblAuditData");
+                StateHasChanged();
+            }
+            catch (Exception err)
+            {
+                toasterservice.AddToast(Toast.NewToast("Delete Audit", "Error: " + err.Message, MessageColour.Danger, 30));
+            }
+        }
+    }
+}

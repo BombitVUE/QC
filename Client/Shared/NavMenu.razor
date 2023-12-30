@@ -1,0 +1,83 @@
+﻿@using BootstrapBlazor.Components
+@inject IJSRuntime js
+@inject NavigationManager Nav
+
+
+
+@*<hr class="m-0" />
+<Nav Alignment="Alignment.Left" IsPills="true" IsFill="true">
+   
+    <NavLink class="nav-link nav-item w-auto" href="/scenario">Scenario</NavLink>
+    <NavLink class="nav-link nav-item w-auto" href="/auditscenarioconnection">ScenarioC</NavLink>
+    <NavLink class="nav-link nav-item w-auto" href="/contdata">ContData</NavLink>
+    <NavLink class="nav-link nav-item w-auto" href="/audittype">AuditType</NavLink>
+    
+</Nav>
+<hr class="m-0" />*@
+
+
+
+@code {
+
+    //open modaldialog editscenario
+    private void MainLayout()
+    {
+        Nav.NavigateTo("/");
+
+    }
+}
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">QC</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span>Main
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/scenario" Match="NavLinkMatch.All">
+                <span class="oi oi-list-rich" aria-hidden="true"></span>Scenario
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/auditscenarioconnection" Match="NavLinkMatch.All">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> ScenarioConnection
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/contdata" Match="NavLinkMatch.All">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Cont Data
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/audittype" Match="NavLinkMatch.All">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Audit Type
+            </NavLink>
+        </div>
+
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

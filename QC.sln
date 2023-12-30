@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QC.Server", "Server\QC.Server.csproj", "{6D65131F-97B3-443C-B42C-7580BF4E4960}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QC.Client", "Client\QC.Client.csproj", "{E767BBC6-3558-4C5E-A986-EFE8CC4BB234}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QC.Shared", "Shared\QC.Shared.csproj", "{950D17EA-1A03-444F-A384-0AE43C21D9AC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6D65131F-97B3-443C-B42C-7580BF4E4960}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D65131F-97B3-443C-B42C-7580BF4E4960}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D65131F-97B3-443C-B42C-7580BF4E4960}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D65131F-97B3-443C-B42C-7580BF4E4960}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E767BBC6-3558-4C5E-A986-EFE8CC4BB234}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E767BBC6-3558-4C5E-A986-EFE8CC4BB234}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E767BBC6-3558-4C5E-A986-EFE8CC4BB234}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E767BBC6-3558-4C5E-A986-EFE8CC4BB234}.Release|Any CPU.Build.0 = Release|Any CPU
+		{950D17EA-1A03-444F-A384-0AE43C21D9AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{950D17EA-1A03-444F-A384-0AE43C21D9AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{950D17EA-1A03-444F-A384-0AE43C21D9AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{950D17EA-1A03-444F-A384-0AE43C21D9AC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CE07B381-46FF-480B-8DE8-A7278EABA9B0}
+	EndGlobalSection
+EndGlobal

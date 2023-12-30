@@ -1,0 +1,48 @@
+﻿<div class="modal @modalClass" tabindex="-1" role="dialog" style="display:@modalDisplay; overflow-y: auto;">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" class="close" @onclick="@(() => Close())">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @ChildContent
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="@(() => Close())">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> CloseEventCallback { get; set; }
+
+    private string modalClass = "";
+    private string modalDisplay = "none";
+ 
+
+    public async Task Open()
+    {
+        modalClass = "show";
+        modalDisplay = "block";
+        StateHasChanged();
+    }
+
+    public async Task Close()
+    {
+        modalClass = "";
+        modalDisplay = "none";
+        StateHasChanged();
+        await CloseEventCallback.InvokeAsync(true);
+    }
+}

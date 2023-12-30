@@ -1,0 +1,306 @@
+﻿@page "/contdata"
+
+@using QC.Shared.Models
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject IJSRuntime JsRuntime
+@using System.Text;
+@using System.Text.Json;
+@using System.Net.Http.Headers
+
+
+<h3>Data ContData</h3>
+
+<ul class="nav justify-content-center">
+    <li class="nav-item">
+        <a class="nav-link" href="/contdata">ContData</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/contdata/contdataattribdata">ContDataAttribData</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/contdata/contdataattribdef">ContDataAttribDef</a>
+    </li>
+</ul>
+
+<h3>ContData</h3>
+
+<button class="btn btn-primary" @onclick="@(() => AddContData())">Add</button>
+
+@if (contDatas == null)
+{
+    <text>Loading...</text>
+}
+else
+{
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th>ContTranUid</th>
+                <th>AuditScenarioUid</th>
+                <th>MatlGrpDefUid</th>
+                <th>AuditNum</th>
+                <th>Start</th>
+                <th>Finish</th>
+                <th>TranType</th>
+                <th>AuditTypeUid</th>
+                <th>Deleted</th>
+                <th>RevDate</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in contDatas)
+            {
+                <tr>
+                    <td>@item.ContTranUid</td>
+                    <td>@item.AuditScenarioUid</td>
+                    <td>@item.MatlGrpDefUid</td>
+                    <td>@item.AuditNum</td>
+                    <td>@item.Start</td>
+                    <td>@item.Finish</td>
+                    <td>@item.TranType</td>
+                    <td>@item.AuditTypeUid</td>
+                    <td>@item.Deleted</td>
+                    <td>@item.RevDate</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="@(() => EditContData(item))">Edit</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="@(() => DeleteContData(item))">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<ModalDialog @ref="@EditModalDialog" Title="Edit ContData">
+    <div class="row">
+        <h3>Edit</h3>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="AuditScenarioUid">AuditScenarioUid</label>
+                <select typeof="number" class="form-select" aria-label="example" @bind=@contData.AuditScenarioUid>
+                    <option value="0" selected>No current item</option>
+                    @foreach (var select in auditScenarios)
+                    {
+                        <option value="@select.AuditScenarioUid">@select.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="MatlGrpDefUid">MatlGrpDefUid</label>
+                <select typeof="number" class="form-select" aria-label="example" @bind=@contData.MatlGrpDefUid>
+                    <option value="0" selected>No current item</option>
+                    @foreach (var select in matlGrpDefs)
+                    {
+                        <option value="@select.MatlGrpDefUid">@select.Model</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="AuditNum">AuditNum</label>
+                <input type="text" class="form-control" id="AuditNum" @bind="@contData.AuditNum" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="TranType">TranType</label>
+                <input type="text" class="form-control" id="TranType" @bind="@contData.TranType" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="AuditTypeUid">AuditTypeUid</label>
+                <select typeof="number" class="form-select" aria-label="example" @bind=@contData.AuditTypeUid>
+                    <option value="0" selected>No current item</option>
+                    @foreach (var select in auditTypes)
+                    {
+                        <option value="@select.AuditTypeUid">@select.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row col-mb-4 mb-2">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Deleted">Deleted</label>
+                <input type="checkbox" id="Deleted" @bind="@contData.Deleted"></input>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <button class="btn btn-primary" @onclick="@(() => UpdateContData())">Update</button>
+        </div>
+    </div>
+</ModalDialog>
+
+<ModalDialog @ref="@AddModalDialog" Title="Add ContData">
+    <div class="row">
+        <h3>Add</h3>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="AuditScenarioUid">AuditScenarioUid</label>
+                <select typeof="number" class="form-select" aria-label="example" @bind=@contData.AuditScenarioUid>
+                    <option value="0" selected>No current item</option>
+                    @foreach (var select in auditScenarios)
+                    {
+                        <option value="@select.AuditScenarioUid">@select.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="MatlGrpDefUid">MatlGrpDefUid</label>
+                <select typeof="number" class="form-select" aria-label="example" @bind=@contData.MatlGrpDefUid>
+                    <option value="0" selected>No current item</option>
+                    @foreach (var select in matlGrpDefs)
+                    {
+                        <option value="@select.MatlGrpDefUid">@select.Model</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="AuditNum">AuditNum</label>
+                <input type="text" class="form-control" id="AuditNum" @bind="@contData.AuditNum" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="TranType">TranType</label>
+                <input type="text" class="form-control" id="TranType" @bind="@contData.TranType" />
+            </div>
+        </div>
+    </div>
+     <div class="row col-mb-4 mb-2">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="AuditTypeUid">AuditTypeUid</label>
+                <select typeof="number" class="form-select" aria-label="example" @bind=@contData.AuditTypeUid>
+                    <option value="0" selected>No current item</option>
+                    @foreach (var select in auditTypes)
+                    {
+                        <option value="@select.AuditTypeUid">@select.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <button class="btn btn-primary" @onclick="@(() => AddContDatas())">Add</button>
+        </div>
+    </div>
+</ModalDialog>
+
+@code {
+
+    private TblContData contData = new TblContData();
+    private List<TblContData> contDatas = new List<TblContData>();
+    private List<TblAuditScenario> auditScenarios = new List<TblAuditScenario>();
+    private List<TblMatlGrpDef> matlGrpDefs = new List<TblMatlGrpDef>();
+    private List<TblAuditType> auditTypes = new List<TblAuditType>();
+
+    private ModalDialog EditModalDialog { get; set; }
+    private ModalDialog AddModalDialog { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        contDatas = await Http.GetFromJsonAsync<List<TblContData>>("api/TblContData");
+
+        auditScenarios = await Http.GetFromJsonAsync<List<TblAuditScenario>>("api/TblAuditScenario");
+
+        matlGrpDefs = await Http.GetFromJsonAsync<List<TblMatlGrpDef>>("api/TblMatlGrpDef");
+
+        auditTypes = await Http.GetFromJsonAsync<List<TblAuditType>>("api/TblAuditType");
+
+    }
+
+    private async Task AddContData()
+    {
+        contData = new TblContData();
+        await AddModalDialog.Open();
+
+    }
+
+    private async Task EditContData(TblContData contData)
+    {
+        this.contData = contData;
+        await EditModalDialog.Open();
+    }
+
+
+    private async Task AddContDatas()
+    {
+
+        await Http.PostAsJsonAsync("api/TblContData", contData);
+        contDatas = await Http.GetFromJsonAsync<List<TblContData>>("api/TblContData");
+        AddModalDialog.Close();
+        StateHasChanged();
+
+    }
+
+    private async Task UpdateContData()
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to update {contData.ContTranUid}?");
+
+        if (confirmed)
+        {
+        await JsRuntime.InvokeAsync<object>("alert", "Edit success");
+        await Http.PutAsJsonAsync("api/TblContData/" + contData.ContTranUid, contData);
+        contDatas = await Http.GetFromJsonAsync<List<TblContData>>("api/TblContData");
+        EditModalDialog.Close();
+        StateHasChanged();
+        }
+        else
+        {
+            await JsRuntime.InvokeAsync<object>("alert", "Edit failed");
+        }
+    }
+
+    private async Task DeleteContData(TblContData item)
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+
+        if (confirmed)
+        {
+            await Http.DeleteAsync($"api/TblContData/{item.ContTranUid}");
+            await JsRuntime.InvokeAsync<object>("alert", "Delete success");
+            contDatas = await Http.GetFromJsonAsync<List<TblContData>>("api/TblContData");
+            StateHasChanged();
+        }
+        else
+        {
+            await JsRuntime.InvokeAsync<object>("alert", "Delete failed");
+        }
+    }
+}

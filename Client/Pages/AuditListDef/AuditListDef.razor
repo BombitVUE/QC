@@ -1,0 +1,230 @@
+﻿@page "/auditlistdef"
+
+@inject HttpClient Http
+@inject NavigationManager Nav
+@using System.Text;
+@using System.Text.Json;
+@using System.Net.Http.Headers
+@inject IJSRuntime JsRuntime
+
+<h3>Data AuditListDef</h3>
+
+<ul class="nav justify-content-center">
+
+    <li class="nav-item">
+        <a class="nav-link" href="/scenario">Scenario</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/auditdata">AuditData</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/auditarticledef">AuditArticleDef</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/auditlistdef">AuditListDef</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/auditscenarioconnection">AuditScenarioConnection</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/audittype">AuditType</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/contdata">ContData</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/contdataattribdata">ContDataAttribData</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/contdataattribdef">ContDataAttribDef</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/matlgrpdef">MatlGrpDef</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/procgrp">ProcGrp</a>
+    </li>
+
+</ul>
+
+
+<h3>AuditListDef</h3>
+
+<button class="btn btn-primary" @onclick="@(() => AddAuditListDefs())">Add</button>
+
+@if (auditListDefs == null)
+{
+    <text>Loading...</text>
+}
+else
+{
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th>AuditListsUid</th>
+                <th>Name</th>
+                <th>GroupName</th>
+                <th>Deleted</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in auditListDefs)
+            {
+                <tr>
+                    <td>@item.AuditListsUid</td>
+                    <td>@item.Name</td>
+                    <td>@item.GroupName</td>
+                    <td>@item.Deleted</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="@(() => EditAuditListDef(item))">Edit</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="@(() => DeleteAuditListDef(item))">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<ModalDialog @ref="@EditModalDialog" Title="Edit AuditListDef">
+    <div class="row">
+        <h3>Edit</h3>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Name">Name</label>
+                <input type="text" class="form-control" id="Name" @bind="@auditListDef.Name" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="GroupName">GroupName</label>
+                <input type="text" class="form-control" id="GroupName" @bind="@auditListDef.GroupName" />
+            </div>
+        </div>
+    </div>
+    <div class="col-mb-4 mb-2">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Deleted">Deleted</label>
+                <input type="checkbox" id="Deleted" @bind="@auditListDef.Deleted"></input>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <button class="btn btn-primary" @onclick="@(() => UpdateAuditListDef())">Update</button>
+        </div>
+    </div>
+</ModalDialog>
+
+<ModalDialog @ref="@AddModalDialog" Title="Add AuditListDef">
+    <div class="row">
+        <h3>Add</h3>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Name">Name</label>
+                <input type="text" class="form-control" id="Name" @bind="@auditListDef.Name" />
+            </div>
+        </div>
+    </div>
+    <div class="row col-mb-4 mb-2">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="GroupName">GroupName</label>
+                <input type="text" class="form-control" id="GroupName" @bind="@auditListDef.GroupName" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <button class="btn btn-primary" @onclick="@(() => AddAuditListDefs())">Add</button>
+        </div>
+    </div>
+</ModalDialog>
+
+@code {
+
+
+    private TblAuditListsDef auditListDef = new TblAuditListsDef();
+    private List<TblAuditListsDef> auditListDefs = new List<TblAuditListsDef>();
+
+
+    private ModalDialog EditModalDialog { get; set; }
+    private ModalDialog AddModalDialog { get; set; }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        auditListDefs = await Http.GetFromJsonAsync<List<TblAuditListsDef>>("api/TblAuditListsDef");
+
+    }
+
+    private async Task AddAuditListDefs()
+    {
+        auditListDef = new TblAuditListsDef();
+        await AddModalDialog.Open();
+
+    }
+
+    private async Task EditAuditListDef(TblAuditListsDef auditListDef)
+    {
+        this.auditListDef = auditListDef;
+        await EditModalDialog.Open();
+    }
+
+
+    private async Task AddAuditListDef()
+    {
+
+        await Http.PostAsJsonAsync("api/TblAuditListsDef", auditListDef);
+        auditListDefs = await Http.GetFromJsonAsync<List<TblAuditListsDef>>("api/TblAuditListsDef");
+        AddModalDialog.Close();
+        StateHasChanged();
+
+    }
+
+    private async Task UpdateAuditListDef()
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to update {auditListDef.Name}?");
+
+        if (confirmed)
+        {
+        await JsRuntime.InvokeAsync<object>("alert", "Edit success");
+        await Http.PutAsJsonAsync("api/TblAuditListsDef/" + auditListDef.AuditListsUid, auditListDef);
+        auditListDefs = await Http.GetFromJsonAsync<List<TblAuditListsDef>>("api/TblAuditListsDef");
+        EditModalDialog.Close();
+        StateHasChanged();
+        }
+        else
+        {
+            await JsRuntime.InvokeAsync<object>("alert", "Edit failed");
+        }
+    }
+
+    private async Task DeleteAuditListDef(TblAuditListsDef item)
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+
+        if (confirmed)
+        {
+            await Http.DeleteAsync($"api/TblAuditListsDef/{item.AuditListsUid}");
+            await JsRuntime.InvokeAsync<object>("alert", "Delete success");
+            auditListDefs = await Http.GetFromJsonAsync<List<TblAuditListsDef>>("api/TblAuditListsDef");
+            StateHasChanged();
+        }
+        else
+        {
+            await JsRuntime.InvokeAsync<object>("alert", "Delete failed");
+        }
+    }
+}

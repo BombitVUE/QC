@@ -1,0 +1,314 @@
+﻿@page "/scenario/auditarticledef"
+
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject IJSRuntime JsRuntime
+@inject ToasterService toasterservice
+
+
+
+<h3>DataAuditArticleDef</h3>
+
+<div class="col">
+    <button class="btn btn-outline-secondary col-mb-4 mb-2 " @onclick="NavScenario">Audit Scenario</button>
+</div>
+
+
+
+<button  class="btn btn-primary col-mb-4 mb-2" @onclick="@(() => AddAuditArticleDef())">Add</button>
+
+
+@if (auditArticleDefs == null)
+{
+    <text>Loading...</text>
+}
+else
+{
+    <table class="table table-sm table-bordered align-middle text-md-center table-responsive col-mb-4 mb-2">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Tittle</th>
+                <th>Content</th>
+                <th>ContDataAttribDef</th>
+                <th>RevDate</th>
+                <th>Delete</th>
+                <th>Buttons</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in auditArticleDefs)
+            {
+                <tr>
+                    <td>@item.AuditArticleDefUid</td>
+                    <td>@item.Name</td>
+                    <td>@item.Tittle</td>
+                    <td >@item.Content</td>
+                    @if (item.ContDataAttribDefUid != null)
+                    {
+
+                        var data = contDataAttribDefs.FirstOrDefault(s => s.ContDataAttribDefUid.Equals(item.ContDataAttribDefUid));
+
+                        if (data != null)
+                        {
+                            <td>@data.Name</td>
+                        }
+                    }
+                    else
+                    {
+                        <td>NOT DATA</td>
+                    }
+                    <td>@item.RevDate</td>
+                    @if (item.Deleted == true)
+                    {
+                        <td>
+                            <input class="form-check-input" type="checkbox" checked="checked" disabled />
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            <input class="form-check-input" type="checkbox" disabled />
+                        </td>
+                    }
+                    <td>
+                        <button class="btn btn-primary" @onclick="@(() => EditAuditArticleDef(item))">Edit</button>|<button class="btn btn-danger" @onclick="@(() => DeleteAuditArticleDef(item))">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<ModalDialog @ref="@EditModalDialog" Title="Edit AuditArticleDef">
+    <EditForm Model="@auditArticleDef" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <div class="row">
+            <h3>Edit</h3>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Name">Name</label>
+                    <InputText class="form-control" id="Name" @bind-Value="@auditArticleDef.Name" />
+                  <div><ValidationMessage For="@(() => auditArticleDef.Name)" /></div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Tittle">Tittle</label>
+                    <InputText class="form-control" id="Tittle" @bind-Value="@auditArticleDef.Tittle" />
+                    <div><ValidationMessage For="@(() => auditArticleDef.Tittle)" /></div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Content">Content</label>
+                    <InputText class="form-control" id="Content" @bind-Value="@auditArticleDef.Content" />
+                    <div><ValidationMessage For="@(() => auditArticleDef.Content)" /></div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Name">Name Attrib Def</label>
+                    <select typeof="number" class="form-select" aria-label="example" @bind=@auditArticleDef.ContDataAttribDefUid>
+                        <option value="0" selected>No current item</option>
+                        @foreach (var select in contDataAttribDefs)
+                        {
+                            <option value="@select.ContDataAttribDefUid">@select.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-mb-4 mb-2">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Deleted">Deleted</label>
+                    <input type="checkbox" id="Deleted" @bind="@auditArticleDef.Deleted"></input>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <button class="btn btn-primary" @onclick="@(() => UpdateAuditArticleDef())">Update</button>
+            </div>
+        </div>
+    </EditForm>
+</ModalDialog>
+
+<ModalDialog @ref="@AddModalDialog" Title="Add AuditArticleDef">
+    <EditForm Model="@auditArticleDefs" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <div class="row">
+            <h3>Edit</h3>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Name">Name</label>
+                    <InputText class="form-control" id="Name" @bind-Value="@auditArticleDef.Name" />
+                    <div><ValidationMessage For="@(() => auditArticleDef.Name)" /></div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Tittle">Tittle</label>
+                    <InputText class="form-control" id="Tittle" @bind-Value="@auditArticleDef.Tittle" />
+                    <div><ValidationMessage For="@(() => auditArticleDef.Tittle)" /></div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Content">Content</label>
+                    <InputText class="form-control" id="Content" @bind-Value="@auditArticleDef.Content" />
+                    <div><ValidationMessage For="@(() => auditArticleDef.Content)" /></div>
+                </div>
+            </div>
+        </div>
+        <div class="row col-mb-4 mb-2">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Name">Name Attrib Def</label>
+                    <select typeof="number" class="form-select" aria-label="example" @bind=@auditArticleDef.ContDataAttribDefUid>
+                        <option value="0" selected>No current item</option>
+                        @foreach (var select in contDataAttribDefs)
+                        {
+                            <option value="@select.ContDataAttribDefUid">@select.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <button class="btn btn-primary" @onclick="@(() => AddAuditArticleDefs())">Add</button>
+            </div>
+        </div>
+    </EditForm>
+</ModalDialog>
+
+@code {
+
+
+    private TblAuditArticleDef auditArticleDef = new TblAuditArticleDef();
+    public TblContDataAttribDef ContDataAttribDefUid = new TblContDataAttribDef();
+    private List<TblContDataAttribDef> contDataAttribDefs = new List<TblContDataAttribDef>();
+    private List<TblAuditArticleDef> auditArticleDefs = new List<TblAuditArticleDef>();
+
+
+    private ModalDialog EditModalDialog { get; set; }
+    private ModalDialog AddModalDialog { get; set; }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        auditArticleDefs = await Http.GetFromJsonAsync<List<TblAuditArticleDef>>("api/TblAuditArticleDef");
+
+        contDataAttribDefs = await Http.GetFromJsonAsync<List<TblContDataAttribDef>>("api/TblContDataAttribDef");
+
+    }
+
+    private void HandleValidSubmit()
+    {
+        Console.WriteLine("OnValidSubmit");
+    }
+
+    public async Task NavScenario()
+    {
+        Nav.NavigateTo("/scenario");
+    }
+
+    private async Task AddAuditArticleDef()
+    {
+        auditArticleDef = new TblAuditArticleDef();
+        await AddModalDialog.Open();
+
+    }
+
+    private async Task EditAuditArticleDef(TblAuditArticleDef auditArticleDef)
+    {
+        this.auditArticleDef = auditArticleDef;
+        await EditModalDialog.Open();
+    }
+
+    private async Task AddAuditArticleDefs()
+    {
+        if (auditArticleDef.Name == "" || auditArticleDef.Tittle == ""|| auditArticleDef.Content == "" || auditArticleDef.Content == null || auditArticleDef.Name == null || auditArticleDef.Tittle == null)
+        {
+            toasterservice.AddToast(Toast.NewToast("AuditArticleDef", "Error: Fill in the input fields ", MessageColour.Danger, 30));
+        }
+        else if (auditArticleDef.Name.Length <= 4 || auditArticleDef.Tittle.Length <= 4 || auditArticleDef.Content.Length <= 4)
+        {
+            toasterservice.AddToast(Toast.NewToast("AuditArticleDef", "Error: Min length 5 symbols ", MessageColour.Danger, 30));
+        }
+        else
+        {
+            try
+            {
+                await Http.PostAsJsonAsync("api/TblAuditArticleDef", auditArticleDef);
+                auditArticleDefs = await Http.GetFromJsonAsync<List<TblAuditArticleDef>>("api/TblAuditArticleDef");
+                AddModalDialog.Close();
+                toasterservice.AddToast(Toast.NewToast("AuditArticleDef", "AuditArticleDef Added", MessageColour.Success, 15));
+                StateHasChanged();
+            }
+            catch (Exception err)
+            {
+                toasterservice.AddToast(Toast.NewToast("AuditArticleDef", "Error: " + err.Message, MessageColour.Danger, 30));
+            }
+        }
+    }
+
+    private async Task UpdateAuditArticleDef()
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to update {auditArticleDef.Name}?");
+
+        if (confirmed == true)
+        {
+            try
+            {
+                toasterservice.AddToast(Toast.NewToast("AuditArticleDef", "AuditArticleDef Edited", MessageColour.Success, 15));
+                await Http.PutAsJsonAsync("api/TblAuditArticleDef/" + auditArticleDef.AuditArticleDefUid, auditArticleDef);
+                auditArticleDefs = await Http.GetFromJsonAsync<List<TblAuditArticleDef>>("api/TblAuditArticleDef");
+                EditModalDialog.Close();
+                StateHasChanged();
+            }
+            catch (Exception err)
+            {
+                toasterservice.AddToast(Toast.NewToast("Edit AuditArticleDef", "Error: " + err.Message, MessageColour.Danger, 30));
+            }
+        }
+    }
+
+    private async Task DeleteAuditArticleDef(TblAuditArticleDef item)
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+
+        if (confirmed)
+        {
+            try
+            {
+                item.Deleted = true;
+                await Http.PutAsJsonAsync($"api/TblAuditScenario/{item.AuditArticleDefUid}", item);
+                toasterservice.AddToast(Toast.NewToast("AuditArticleDef", "AuditArticleDef Disable", MessageColour.Success, 15));
+                StateHasChanged();
+            }
+            catch (Exception err)
+            {
+                toasterservice.AddToast(Toast.NewToast("AuditArticleDef", "Error: " + err.Message, MessageColour.Danger, 30));
+            }
+        }
+    }
+}

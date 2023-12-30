@@ -1,0 +1,115 @@
+﻿@*@page "/auditdata"
+
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject ToasterService toasterservice
+
+<h1>Audit Data</h1>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4 class="card-title">Audit Data</h4>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <button class="btn btn-primary btn-round" @onclick="@(() => AddNew())">
+                            <i class="nc-icon nc-simple-add"></i> Add New
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead class=" text-primary">
+                            <tr>
+                                <th>
+                                    AuditDataUid
+                                </th>
+                                <th>
+                                    AuditScenarioUid
+                                </th>
+                                <th>
+                                    AuditArticleDefUid
+                                </th>
+                                <th>
+                                    Order
+                                </th>
+                                <th>
+                                    Deleted
+                                </th>
+                                <th>
+                                    RevDate
+                                </th>
+                                <th>
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in auditdata)
+                            {
+                                <tr>
+                                    <td>
+                                        @item.AuditDataUid
+                                    </td>
+                                    <td>
+                                        @item.AuditScenarioUid
+                                    </td>
+                                    <td>
+                                        @item.AuditArticleDefUid
+                                    </td>
+                                    <td>
+                                        @item.Order
+                                    </td>
+                                    <td>
+                                        @item.Deleted
+                                    </td>
+                                    <td>
+                                        @item.RevDate
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-primary btn-round" @onclick="@(() => Edit(item))">
+                                            <i class="nc-icon nc-ruler-pencil"></i> Edit
+                                        </button>
+                                        <button class="btn btn-danger btn-round" @onclick="@(() => Delete(item))">
+                                            <i class="nc-icon nc-simple-remove"></i> Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<TblAuditData> auditdata = new List<TblAuditData>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        auditdata = await Http.GetFromJsonAsync<List<TblAuditData>>("api/TblAuditData");
+    }
+
+    private void AddNew()
+    {
+        Nav.NavigateTo("auditdata/0");
+    }
+
+    private void Edit(TblAuditData item)
+    {
+        Nav.NavigateTo($"auditdata/{item.AuditDataUid}");
+    }
+
+    private async Task Delete(TblAuditData item)
+    {
+        await Http.DeleteAsync($"api/TblAuditData/{item.AuditDataUid}");
+        auditdata.Remove(item);
+    }
+}*@

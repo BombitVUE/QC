@@ -1,0 +1,264 @@
+﻿@page "/auditscenarioconnection"
+
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject IJSRuntime JsRuntime
+@inject ToasterService toasterservice
+
+<h3>Data AuditScenarioConnection</h3>
+
+<ul class="nav justify-content-center">
+    <li class="nav-item">
+        <a class="nav-link" href="/auditscenarioconnection">AuditScenarioConnection</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/auditscenarioconnection/matlgrpdef">MatlGrpDef</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/auditscenarioconnection/procgrp">ProcGrp</a>
+    </li>
+</ul>
+
+
+<h3>DataScenarioConnection</h3>
+
+<button class="btn btn-primary" @onclick="@(() => AddAuditScenarioConnection())">Add</button>
+
+
+@if (auditScenarioConnections == null)
+{
+    <text>Loading...</text>
+}
+else
+{
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th>AuditScenarioConnectionUid</th>
+                <th>MatlGrpDefUid</th>
+                <th>AuditScenarioUid</th>
+                <th>AuditTypeUid</th>
+                <th>Deleted</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in auditScenarioConnections)
+            {
+                <tr>
+                    <td>@item.AuditScenarioConnectionUid</td>
+                    <td>@item.MatlGrpDefUid</td>
+                    <td>@item.AuditScenarioUid</td>
+                    <td>@item.AuditTypeUid</td>
+                    <td>@item.Deleted</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="@(() => EditAuditScenarioConnection(item))">Edit</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="@(() => DeleteAuditScenarioConnection(item))">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<ModalDialog @ref="@EditModalDialog" Title="Edit AuditScenarioConnection">
+    <EditForm Model="auditScenarioConnection">
+    <div class="row">
+        <h3>Edit</h3>
+    </div>
+    <div class="row col-mb-4 mb-2">
+        <div class="col-md-4">
+            <InputSelect typeof="number" class="form-select" aria-label="example" @bind-Value=@auditScenarioConnection.MatlGrpDefUid>
+                <option value="0" selected>No current item</option>
+                @foreach (var select in matlGrpDefs)
+                {
+                    <option value="@select.MatlGrpDefUid">@select.Model</option>
+                }
+            </InputSelect>
+        </div>
+    </div>
+    <div class="row col-mb-4 mb-2">
+        <div class="col-md-4">
+            <InputSelect typeof="number" class="form-select" aria-label="example" @bind-Value=@auditScenarioConnection.AuditScenarioUid>
+                <option value="0" selected>No current item</option>
+                @foreach (var select in auditScenarios)
+                {
+                    <option value="@select.AuditScenarioUid">@select.Name</option>
+                }
+            </InputSelect>
+        </div>
+    </div>
+    <div class="row col-mb-4 mb-2">
+        <div class="col-md-4">
+            <InputSelect typeof="number" class="form-select" aria-label="example" @bind-Value=@auditScenarioConnection.AuditTypeUid>
+                <option value="0" selected>No current item</option>
+                @foreach (var select in auditTypes)
+                {
+                    <option value="@select.AuditTypeUid">@select.Name</option>
+                }
+            </InputSelect>
+        </div>
+    </div>
+    <div class="col-mb-4 mb-2">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Deleted">Deleted</label>
+                <input type="checkbox" id="Deleted" @bind="@auditScenarioConnection.Deleted"></input>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <button class="btn btn-primary" @onclick="@(() => UpdateAuditScenarioConnection())">Update</button>
+        </div>
+    </div>
+    </EditForm>
+</ModalDialog>
+
+
+<ModalDialog @ref="@AddModalDialog" Title="Add AuditScenarioConnection" >
+    <EditForm Model="auditScenarioConnection">
+    <div class="row">
+        <h3>Add</h3>
+    </div>
+    <div class="row col-mb-4 mb-2">
+        <div class="col-md-4">
+            <InputSelect typeof="number" class="form-select" aria-label="example" @bind-Value=@auditScenarioConnection.MatlGrpDefUid>
+                <option value="0" selected>No current item</option>
+                @foreach (var select in matlGrpDefs)
+                {
+                    <option value="@select.MatlGrpDefUid">@select.Model</option>
+                }
+            </InputSelect>
+        </div>
+    </div>
+    <div class="row col-mb-4 mb-2">
+        <div class="col-md-4">
+            <InputSelect typeof="number" class="form-select" aria-label="example" @bind-Value=@auditScenarioConnection.AuditScenarioUid>
+                <option value="0" selected>No current item</option>
+                @foreach (var select in auditScenarios)
+                {
+                    <option value="@select.AuditScenarioUid">@select.Name</option>
+                }
+            </InputSelect>
+        </div>
+    </div>
+    <div class="row col-mb-4 mb-2">
+        <div class="col-md-4">
+            <InputSelect typeof="number" class="form-select" aria-label="example" @bind-Value=@auditScenarioConnection.AuditTypeUid>
+                <option value="0" selected>No current item</option>
+                @foreach (var select in auditTypes)
+                {
+                    <option value="@select.AuditTypeUid">@select.Name</option>
+                }
+            </InputSelect>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <button class="btn btn-primary" @onclick="@(() => AddAuditScenarioConnections())">Add</button>
+        </div>
+    </div>
+    </EditForm>
+</ModalDialog>
+
+@code {
+
+
+    private TblAuditScenarioConnection auditScenarioConnection = new TblAuditScenarioConnection();
+    public TblMatlGrpDef MatlGrpDefUid = new TblMatlGrpDef();
+    public TblAuditScenario AuditScenarioUid = new TblAuditScenario();
+    public TblAuditType AuditTypeUid = new TblAuditType();
+    private List<TblMatlGrpDef> matlGrpDefs = new List<TblMatlGrpDef>();
+    private List<TblAuditScenario> auditScenarios = new List<TblAuditScenario>();
+    private List<TblAuditType> auditTypes = new List<TblAuditType>();
+    private List<TblAuditScenarioConnection> auditScenarioConnections = new List<TblAuditScenarioConnection>();
+
+
+    private ModalDialog EditModalDialog { get; set; }
+    private ModalDialog AddModalDialog { get; set; }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        auditScenarioConnections = await Http.GetFromJsonAsync<List<TblAuditScenarioConnection>>("api/TblAuditScenarioConnection");
+
+        auditScenarios = await Http.GetFromJsonAsync<List<TblAuditScenario>>("api/TblAuditScenario");
+
+        auditTypes = await Http.GetFromJsonAsync<List<TblAuditType>>("api/TblAuditType");
+
+        matlGrpDefs = await Http.GetFromJsonAsync<List<TblMatlGrpDef>>("api/TblMatlGrpDef");
+
+    }
+
+    private async Task AddAuditScenarioConnection()
+    {
+        auditScenarioConnection = new TblAuditScenarioConnection();
+        await AddModalDialog.Open();
+
+    }
+
+    private async Task EditAuditScenarioConnection(TblAuditScenarioConnection auditScenarioConnection)
+    {
+        this.auditScenarioConnection = auditScenarioConnection;
+        await EditModalDialog.Open();
+    }
+
+
+
+
+    private async Task AddAuditScenarioConnections()
+    {
+        try
+        {
+            await Http.PostAsJsonAsync("api/TblAuditScenarioConnection", auditScenarioConnection);
+            auditScenarioConnections = await Http.GetFromJsonAsync<List<TblAuditScenarioConnection>>("api/TblAuditScenarioConnection");
+            AddModalDialog.Close();
+            toasterservice.AddToast(Toast.NewToast("Audit", "Audit Added", MessageColour.Success, 15));
+            StateHasChanged();
+        }
+        catch (Exception err)
+        {
+            toasterservice.AddToast(Toast.NewToast("Audit", "Error: " + err.Message, MessageColour.Danger, 30));
+        }
+    }
+
+    private async Task UpdateAuditScenarioConnection()
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to update {auditScenarioConnection.AuditScenarioConnectionUid}?");
+
+        if (confirmed)
+        {
+        await JsRuntime.InvokeAsync<object>("alert", "Edit success");
+        await Http.PutAsJsonAsync("api/TblAuditScenarioConnection/" + auditScenarioConnection.AuditScenarioConnectionUid, auditScenarioConnection);
+        auditScenarioConnections = await Http.GetFromJsonAsync<List<TblAuditScenarioConnection>>("api/TblAuditScenarioConnection");
+        EditModalDialog.Close();
+        StateHasChanged();
+        }
+        else
+        {
+            await JsRuntime.InvokeAsync<object>("alert", "Edit failed");
+        }
+    }
+
+    private async Task DeleteAuditScenarioConnection(TblAuditScenarioConnection item)
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+
+        if (confirmed)
+        {
+            await Http.DeleteAsync($"api/TblAuditScenarioConnection/{item.AuditScenarioConnectionUid}");
+            await JsRuntime.InvokeAsync<object>("alert", "Delete success");
+            auditScenarioConnections = await Http.GetFromJsonAsync<List<TblAuditScenarioConnection>>("api/TblAuditScenarioConnection");
+            StateHasChanged();
+        }
+        else
+        {
+            await JsRuntime.InvokeAsync<object>("alert", "Delete failed");
+        }
+    }
+}

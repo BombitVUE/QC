@@ -1,0 +1,287 @@
+﻿@page "/scenario"
+
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject IJSRuntime JsRuntime
+@inject ToasterService toasterservice
+@using QC.Shared.Models
+
+
+
+
+
+<h3>Data AuditScenario</h3>
+
+<div class="col">
+    <button class="btn btn-outline-secondary col-mb-4 mb-2 " @onclick="NavArticle">Audit Article</button>
+</div>
+
+<button class="btn btn-primary col-mb-4 mb-2" @onclick="@(() => AddAuditScenario())">Add</button>
+
+
+@if (auditScenarios == null)
+{
+    <text>Loading...</text>
+}
+else
+{
+    <table class="table table-sm table-bordered align-middle text-md-center table-responsive col-mb-4 mb-2">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>AuditTypeUid</th>
+                <th>RevDate</th>
+                <th>Deleted</th>
+                <th>Buttons</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (TblAuditScenario scenario in scenarios)
+            {
+                if (!IsVisible(scenario))
+                    continue;
+                <tr>
+                    <td>@scenario.AuditScenarioUid</td>
+                    <td>@scenario.Name</td>
+                    <td>@scenario.Description</td>
+                    @if (scenario.AuditTypeUid != null)
+                    {
+
+                        var data = auditTypes.FirstOrDefault(s => s.AuditTypeUid.Equals(scenario.AuditTypeUid));
+
+                        if (data != null)
+                        {
+                            <td>@data.Name</td>
+                        }
+                    }
+                    else
+                    {
+                        <td>NOT DATA</td>
+                    }
+                    <td value="yyyy-mm-dd">@scenario.RevDate</td>
+
+                    @if (scenario.Deleted == true)
+                    {
+                        <td>
+                            <input class="form-check-input" type="checkbox" checked="checked" disabled />
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            <input class="form-check-input" type="checkbox" disabled />
+                        </td>
+                    }
+
+                    <td>
+                        <button class="btn btn-primary" @onclick="@(() => EditAuditScenario(scenario))">Manage</button>|<button class="btn btn-danger" @onclick="@(() => DeleteAuditScenario(scenario))">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <Pagination TotalPages="@(totalPages != 0 ? totalPages : 1)"
+                    PageIndex="@PageIndex"
+                    Radius="3"
+                    OnSelectedPage="@SelectedPage">
+            </Pagination>
+        </tfoot>
+    </table>
+}
+
+
+<ModalDialog @ref="@AddModalDialog" Title="Add AuditScenario">
+    <EditForm Model="@auditScenarios" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <div class="row">
+            <h3>Add</h3>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Name">Name</label>
+                    <InputText class="form-control" id="Name" @bind-Value="@auditScenario.Name" />
+                    <div><ValidationMessage class="oi-arrow-right" For="@(() => auditScenario.Name)" /></div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Description">Description</label>
+                    <InputText class="form-control" id="Description" @bind-Value="@auditScenario.Description" />
+                    <div>
+                        <ValidationMessage For="@(() => auditScenario.Description)" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-mb-4 mb-2">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Name">Name Audit Type</label>
+                    <select typeof="number" class="form-select" aria-label="example" @bind=@auditScenario.AuditTypeUid>
+                        <option value="0" selected>No current item</option>
+                        @foreach (var select in auditTypes)
+                        {
+                            <option value="@select.AuditTypeUid">@select.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <button class="btn btn-primary" @onclick="@(() => AddAuditScenarios())">Add</button>
+            </div>
+        </div>
+    </EditForm>
+</ModalDialog>
+
+
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    public TblAuditScenario AuditScenarioUid { get; set; }
+    public TblAuditType AuditTypeUid = new TblAuditType();
+
+    public TblAuditScenario Name { get; set; }
+    public TblAuditScenario Description { get; set; }
+    public TblAuditScenario Deleted { get; set; }
+    public TblAuditScenario RevDate { get; set; }
+
+    private TblAuditScenario auditScenario = new TblAuditScenario();
+    private List<TblAuditType> auditTypes = new List<TblAuditType>();
+    private List<TblAuditScenario> auditScenarios = new List<TblAuditScenario>();
+
+    private ModalDialog EditModalDialog { get; set; }
+    private ModalDialog AddModalDialog { get; set; }
+
+
+    public string Filter { get; set; }
+
+    private IEnumerable<TblAuditScenario> allScenarios = null;
+    private IEnumerable<TblAuditScenario> scenarios = Enumerable.Empty<TblAuditScenario>();
+
+    private int PageIndex = 1;
+    private int itemsPerPage = 5;
+    private int totalPages = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        auditScenarios = await Http.GetFromJsonAsync<List<TblAuditScenario>>("api/TblAuditScenario");
+
+        auditTypes = await Http.GetFromJsonAsync<List<TblAuditType>>("api/TblAuditType");
+
+        allScenarios = await Http.GetFromJsonAsync<IEnumerable<TblAuditScenario>>("api/TblAuditScenario");
+
+        if (allScenarios != null)
+        {
+            // Initialize the number of "totalPages"
+            totalPages = (int)(allScenarios.Count() / itemsPerPage);
+
+
+            scenarios = allScenarios.Skip(0).Take(itemsPerPage);
+        }
+    }
+
+    public bool IsVisible(TblAuditScenario scenario)
+{
+    if (string.IsNullOrEmpty(Filter))
+        return true;
+ 
+        return scenario.Name.ToLower().Contains(Filter.ToLower());
+}
+
+
+    private void SelectedPage(int selectedPageIndex)
+    {
+        if (allScenarios != null)
+        {
+            PageIndex = selectedPageIndex;
+            var skipCount = itemsPerPage * (PageIndex - 1);
+            scenarios = allScenarios.Skip(skipCount).Take(itemsPerPage);
+        }
+    }
+
+
+    //validation message
+    private void HandleValidSubmit()
+    {
+        Console.WriteLine("OnValidSubmit");
+    }
+    //Open modaldialog addscenario
+    private async Task AddAuditScenario()
+    {
+        auditScenario = new TblAuditScenario();
+        await AddModalDialog.Open();
+
+    }
+    //open modaldialog editscenario
+    private void EditAuditScenario(TblAuditScenario auditScenario)
+    {
+        Nav.NavigateTo($"/scenario/edit/{auditScenario.AuditScenarioUid}");
+
+    }
+
+    public async Task NavArticle()
+    {
+        Nav.NavigateTo("/scenario/auditarticledef");
+    }
+
+    //button addscenario
+    private async Task AddAuditScenarios()
+    {
+        if (auditScenario.Name == "" || auditScenario.Description == "" || auditScenario.Name == null || auditScenario.Description == null)
+        {
+            toasterservice.AddToast(Toast.NewToast("Scenario", "Error: Fill in the input fields ", MessageColour.Danger, 30));
+        }
+        else if (auditScenario.Name.Length <= 4 || auditScenario.Description.Length <= 4)
+        {
+            toasterservice.AddToast(Toast.NewToast("Scenario", "Error: Min length 5 symbols ", MessageColour.Danger, 30));
+        }
+        else
+        {
+            try
+            {
+                await Http.PostAsJsonAsync("api/TblAuditScenario", auditScenario);
+                auditScenarios = await Http.GetFromJsonAsync<List<TblAuditScenario>>("api/TblAuditScenario");
+                AddModalDialog.Close();
+                toasterservice.AddToast(Toast.NewToast("Scenario", "Scenario Added", MessageColour.Success, 15));
+                StateHasChanged();
+            }
+            catch (Exception err)
+            {
+                toasterservice.AddToast(Toast.NewToast("Scenario", "Error: " + err.Message, MessageColour.Danger, 30));
+            }
+        }
+    }
+
+
+
+    //button delete scenario
+    private async Task DeleteAuditScenario(TblAuditScenario item)
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+
+        if (confirmed)
+        {
+            try
+            {
+                item.Deleted = true;
+                await Http.PutAsJsonAsync($"api/TblAuditScenario/{item.AuditScenarioUid}", item);
+                toasterservice.AddToast(Toast.NewToast("Scenario", "Scenario Disable", MessageColour.Success, 15));
+                StateHasChanged();
+            }
+            catch (Exception err)
+            {
+                toasterservice.AddToast(Toast.NewToast("Scenario", "Error: " + err.Message, MessageColour.Danger, 30));
+            }
+        }
+    }
+}

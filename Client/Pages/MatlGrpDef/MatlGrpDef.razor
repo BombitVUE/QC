@@ -1,0 +1,255 @@
+﻿@page "/auditscenarioconnection/matlgrpdef"
+
+@using QC.Shared.Models
+
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject IJSRuntime JsRuntime
+@using System.Text;
+@using System.Text.Json;
+@using System.Net.Http.Headers
+
+
+<h3>Data MatlGrpDef</h3>
+
+<ul class="nav justify-content-center">
+    <li class="nav-item">
+        <a class="nav-link" href="/auditscenarioconnection">AuditScenarioConnection</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/auditscenarioconnection/matlgrpdef">MatlGrpDef</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/auditscenarioconnection/procgrp">ProcGrp</a>
+    </li>
+</ul>
+
+<h3>MatlGrpData</h3>
+
+<button class="btn btn-primary" @onclick="@(() => AddMatlGrpDef())">Add</button>
+
+@if (matlGrpDefs == null)
+{
+    <text>Loading...</text>
+}
+else
+{
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th>MatlGrpDefUid</th>
+                <th>ProcGrpUid</th>
+                <th>Model</th>
+                <th>PosCode</th>
+                <th>Description</th>
+                <th>Deleted</th>
+                <th>RevDate</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in matlGrpDefs)
+            {
+                <tr>
+                    <td>@item.MatlGrpDefUid</td>
+                    <td>@item.ProcGrpUid</td>
+                    <td>@item.Model</td>
+                    <td>@item.PosCode</td>
+                    <td>@item.Description</td>
+                    <td>@item.Deleted</td>
+                    <td>@item.RevDate</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="@(() => EditMatlGrpDef(item))">Edit</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="@(() => DeleteMatlGrpDef(item))">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+<ModalDialog @ref="@EditModalDialog" Title="Edit MatlGrpDef">
+    <div class="row">
+        <h3>Edit</h3>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Name">Name</label>
+                <select typeof="number" class="form-select"aria-label="example"@bind=@matlGrpDef.ProcGrpUid>
+                    <option value="0" selected>No current item</option>
+                    @foreach (var select in procGrps)
+                    {
+                        <option value="@select.ProcGrpUid">@select.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Model">Model</label>
+                <input type="text" class="form-control" id="Model" @bind="@matlGrpDef.Model" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="PosCode">PosCode</label>
+                <input type="text" class="form-control" id="PosCode" @bind="@matlGrpDef.PosCode" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Description">Description</label>
+                <input type="text" class="form-control" id="Description" @bind="@matlGrpDef.Description" />
+            </div>
+        </div>
+    </div>
+    <div class="col-mb-4 mb-2">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Deleted">Deleted</label>
+                <input type="checkbox" id="Deleted" @bind="@matlGrpDef.Deleted"></input>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <button class="btn btn-primary" @onclick="@(() => UpdateMatlGrpDef())">Update</button>
+        </div>
+    </div>
+</ModalDialog>
+
+<ModalDialog @ref="@AddModalDialog" Title="Add MatlGrpDef">
+    <div class="row">
+        <h3>Add</h3>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Name">Name</label>
+                <select typeof="number"class="form-select"aria-label="example" @bind=@matlGrpDef.ProcGrpUid>
+                    <option value="0" selected>No current item</option>
+                    @foreach (var select in procGrps)
+                    {
+                        <option value="@select.ProcGrpUid">@select.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Model">Model</label>
+                <input type="text" class="form-control" id="Model" @bind="@matlGrpDef.Model" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="PosCode">PosCode</label>
+                <input type="text" class="form-control" id="PosCode" @bind="@matlGrpDef.PosCode" />
+            </div>
+        </div>
+    </div>
+    <div class="row col-mb-4 mb-2">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Description">Description</label>
+                <input type="text" class="form-control" id="Description" @bind="@matlGrpDef.Description" />
+            </div>
+        </div>
+    </div> 
+    <div class="row">
+        <div class="col-md-4">
+            <button class="btn btn-primary" @onclick="@(() => AddMatlGrpDefs())">Add</button>
+        </div>
+    </div>
+</ModalDialog>
+
+@code {
+
+    private TblMatlGrpDef matlGrpDef = new TblMatlGrpDef();
+    private List<TblMatlGrpDef> matlGrpDefs = new List<TblMatlGrpDef>();
+    private List<TblProcGrp> procGrps = new List<TblProcGrp>();
+
+    private ModalDialog EditModalDialog { get; set; }
+    private ModalDialog AddModalDialog { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        matlGrpDefs = await Http.GetFromJsonAsync<List<TblMatlGrpDef>>("api/TblMatlGrpDef");
+
+        procGrps = await Http.GetFromJsonAsync<List<TblProcGrp>>("api/TblProcGrp");
+
+    }
+
+    private async Task AddMatlGrpDef()
+    {
+        matlGrpDef = new TblMatlGrpDef();
+        await AddModalDialog.Open();
+
+    }
+
+    private async Task EditMatlGrpDef(TblMatlGrpDef matlGrpDef)
+    {
+        this.matlGrpDef = matlGrpDef;
+        await EditModalDialog.Open();
+    }
+
+    private async Task AddMatlGrpDefs()
+    {
+
+        await Http.PostAsJsonAsync("api/TblMatlGrpDef", matlGrpDef);
+        matlGrpDefs = await Http.GetFromJsonAsync<List<TblMatlGrpDef>>("api/TblMatlGrpDef");
+        AddModalDialog.Close();
+        StateHasChanged();
+
+    }
+
+    private async Task UpdateMatlGrpDef()
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to update {matlGrpDef.Model}?");
+
+        if (confirmed)
+        {
+        await JsRuntime.InvokeAsync<object>("alert", "Edit success");
+        await Http.PutAsJsonAsync("api/TblMatlGrpDef/" + matlGrpDef.MatlGrpDefUid, matlGrpDef);
+        matlGrpDefs = await Http.GetFromJsonAsync<List<TblMatlGrpDef>>("api/TblMatlGrpDef");
+        EditModalDialog.Close();
+        StateHasChanged();
+        }
+        else
+        {
+            await JsRuntime.InvokeAsync<object>("alert", "Edit failed");
+        }
+    }
+
+    private async Task DeleteMatlGrpDef(TblMatlGrpDef item)
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+
+        if (confirmed)
+        {
+            await Http.DeleteAsync($"api/TblMatlGrpDef/{item.MatlGrpDefUid}");
+            await JsRuntime.InvokeAsync<object>("alert", "Delete success");
+            matlGrpDefs = await Http.GetFromJsonAsync<List<TblMatlGrpDef>>("api/TblMatlGrpDef");
+            StateHasChanged();
+        }
+        else
+        {
+            await JsRuntime.InvokeAsync<object>("alert", "Delete failed");
+        }
+    }
+}

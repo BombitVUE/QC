@@ -1,0 +1,75 @@
+﻿@inherits LayoutComponentBase
+@inject IJSRuntime js
+@inject NavigationManager Nav
+
+
+<div class="page @GetCssClass()">
+    <div class="sidebar">
+
+
+        <NavMenu />
+    </div>
+
+    <main >
+        <div class="top-row px-4 justify-content-start">
+            <img @onclick="@(()=> MainLayou())" src="css/logodaikin.png" width="200" height="50" />
+            <img src="css/qc.png" width="50" height="50" />
+            <label class="m-lg-4">Theme</label>
+            <select @onchange="ChangingTheme" style="margin-left: 1rem">
+                @foreach (var theme in themes)
+                {
+                        <option selected="@IsSelectedTheme(theme)" value="@theme">@theme</option>
+                }
+            </select>
+        </div>
+
+        @Body
+
+       
+    </main>
+</div>
+
+@code {
+    private string selectedTheme = "Light";
+    private List<string> themes = new List<string> { "Light", "Dark" };
+    private readonly string keyTheme = "theme";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var themeFromLocalStorage = await js.InvokeAsync<string>("readLocalStorage", keyTheme);
+        if (!string.IsNullOrEmpty(themeFromLocalStorage))
+        {
+            selectedTheme = themeFromLocalStorage;
+        }
+    }
+
+    private string GetCssClass()
+    {
+        if (selectedTheme == "Light")
+        {
+            return String.Empty;
+        }
+        else
+        {
+            return "dark-mode";
+        }
+    }
+
+    private bool IsSelectedTheme(string theme)
+    {
+        return theme == selectedTheme;
+    }
+
+    private async void ChangingTheme(ChangeEventArgs e)
+    {
+        selectedTheme = e.Value.ToString();
+        await js.InvokeVoidAsync("addToLocalStorage", keyTheme, selectedTheme);
+    }
+
+    //open modaldialog editscenario
+    private void MainLayou()
+    {
+        Nav.NavigateTo("/");
+
+    }
+}

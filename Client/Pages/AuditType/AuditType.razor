@@ -1,0 +1,176 @@
+﻿@page "/audittype"
+
+@inject HttpClient Http
+@inject NavigationManager Nav
+@using System.Text;
+@using System.Text.Json;
+@using System.Net.Http.Headers
+@inject IJSRuntime JsRuntime
+
+<h3>Data AuditType</h3>
+
+<ul class="nav justify-content-center">
+<li class="nav-item">
+        <a class="nav-link" href="/audittype">AuditType</a>
+    </li>
+</ul>
+
+<h3>AuditType</h3>
+
+<button class="btn btn-primary" @onclick="@(() => AddAuditType())">Add</button>
+
+@if (auditTypes == null)
+{
+    <text>Loading...</text>
+}
+else
+{
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th>AuditTypeUid</th>
+                <th>Name</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in auditTypes)
+            {
+                <tr>
+                    <td>@item.AuditTypeUid</td>
+                    <td>@item.Name</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="@(() => EditAuditType(item))">Edit</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="@(() => DeleteAuditType(item))">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+
+<ModalDialog @ref="@EditModalDialog" Title="Edit AuditType">
+    <div class="row">
+        <h3>Edit</h3>
+    </div>
+    <div class="col-mb-4 mb-2">
+        <div class="col-md-4">
+            <label for="Name">Name</label>
+            <select typeof="number" class="form-select" aria-label="example" @bind=@auditType.AuditTypeUid>
+                <option value="0" selected>No current item</option>
+                @foreach (var select in auditTypes)
+                {
+                    <option value="@select.AuditTypeUid">@select.Name</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <button class="btn btn-primary" @onclick="@(() => UpdateAuditType())">Update</button>
+        </div>
+    </div>
+</ModalDialog>
+
+<ModalDialog @ref="@AddModalDialog" Title="Add AuditType">
+    <div class="row">
+        <h3>Add</h3>
+    </div>
+    <div class="row col-mb-4 mb-2">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Name">Name</label>
+                <input type="text" class="form-control" id="Name" @bind="@auditType.Name" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <button class="btn btn-primary" @onclick="@(() => AddAuditTypes())">Add</button>
+        </div>
+    </div>
+</ModalDialog>
+
+@code {
+
+
+    private TblAuditType auditType = new TblAuditType();
+    private List<TblAuditType> auditTypes = new List<TblAuditType>();
+
+
+    private ModalDialog EditModalDialog { get; set; }
+    private ModalDialog AddModalDialog { get; set; }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        auditTypes = await Http.GetFromJsonAsync<List<TblAuditType>>("api/TblAuditType");
+
+    }
+
+    private async Task AddAuditType()
+    {
+        auditType = new TblAuditType();
+        await AddModalDialog.Open();
+
+    }
+
+    private async Task EditAuditType(TblAuditType auditType)
+    {
+        this.auditType = auditType;
+        await EditModalDialog.Open();
+    }
+
+
+    private async Task AddAuditTypes()
+    {
+
+        await Http.PostAsJsonAsync("api/TblAuditType", auditType);
+        auditTypes = await Http.GetFromJsonAsync<List<TblAuditType>>("api/TblAuditType");
+        AddModalDialog.Close();
+        StateHasChanged();
+
+    }
+
+    private async Task UpdateAuditType()
+    {
+
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to update {auditType.Name}?");
+
+        if (confirmed)
+        {
+            await JsRuntime.InvokeAsync<object>("alert", "Edit success");
+            await Http.PutAsJsonAsync("api/TblAuditType/" + auditType.AuditTypeUid, auditType);
+            auditTypes = await Http.GetFromJsonAsync<List<TblAuditType>>("api/TblAuditType");
+            EditModalDialog.Close();
+            StateHasChanged();
+        }
+        else
+        {
+            await JsRuntime.InvokeAsync<object>("alert", "Edit failed");
+        }
+    }
+
+    private async Task DeleteAuditType(TblAuditType item)
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+
+        if (confirmed)
+        {
+            await Http.DeleteAsync($"api/TblAuditType/{item.AuditTypeUid}");
+            await JsRuntime.InvokeAsync<object>("alert", "Delete success");
+            auditTypes = await Http.GetFromJsonAsync<List<TblAuditType>>("api/TblAuditType");
+            StateHasChanged();
+        }
+        else
+        {
+            await JsRuntime.InvokeAsync<object>("alert", "Delete failed");
+        }
+    }
+}

@@ -1,0 +1,261 @@
+﻿@page "/contdata/contdataattribdata"
+
+@inject HttpClient Http
+@inject NavigationManager Nav
+@using System.Text;
+@using System.Text.Json;
+@using System.Net.Http.Headers
+@inject IJSRuntime JsRuntime
+
+
+<h3>Data ContDataAttribData</h3>
+
+<ul class="nav justify-content-center">
+    <li class="nav-item">
+        <a class="nav-link" href="/contdata">ContData</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/contdata/contdataattribdata">ContDataAttribData</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/contdata/contdataattribdef">ContDataAttribDef</a>
+    </li>
+</ul>
+
+
+<h3>Data ContDataAttribData</h3>
+
+<button class="btn btn-primary" @onclick="@(() => AddContDataAttribData())">Add</button>
+
+@if (contDataAttribDatas == null)
+{
+    <text>Loading...</text>
+}
+else
+{
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th>ContDataAttribDataUid</th>
+                <th>ContDataAttribDefUid</th>
+                <th>ContTranUid</th>
+                <th>Value</th>
+                <th>Deleted</th>
+                <th>RevNo</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in contDataAttribDatas)
+            {
+                <tr>
+                    <td>@item.ContDataAttribDataUid</td>
+                    <td>@item.ContDataAttribDefUid</td>
+                    <td>@item.ContTranUid</td>
+                    <td>@item.Value</td>
+                    <td>@item.Deleted</td>
+                    <td>@item.RevNo</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="@(() => EditContDataAttribData(item))">Edit</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="@(() => DeleteContDataAttribData(item))">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<ModalDialog @ref="@EditModalDialog" Title="Edit ContDataAttribData">
+    <EditForm Model="contDataAttribData">
+        <div class="row">
+            <h3>Edit</h3>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Name">Name</label>
+                    <select typeof="number" class="form-select" aria-label="example" @bind=@contDataAttribData.ContDataAttribDefUid>
+                        <option value="0" selected>No current item</option>
+                        @foreach (var select in contDataAttribDefs)
+                        {
+                            <option value="@select.ContDataAttribDefUid">@select.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Name">Name</label>
+                    <select typeof="number" class="form-select" aria-label="example" @bind=@contDataAttribData.ContTranUid>
+                        <option value="0" selected>No current item</option>
+                        @foreach (var select in contDatas)
+                        {
+                            <option value="@select.ContTranUid">@select.TranType</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Value">Value</label>
+                    <input type="text" class="form-control" id="Value" @bind="@contDataAttribData.Value" />
+                </div>
+            </div>
+        </div>
+        <div class="col-mb-4 mb-2">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="Deleted">Deleted</label>
+                    <input type="checkbox" id="Deleted" @bind="@contDataAttribData.Deleted"></input>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <button class="btn btn-primary" @onclick="@(() => UpdateContDataAttribData())">Update</button>
+            </div>
+        </div>
+    </EditForm>
+</ModalDialog>
+
+<ModalDialog @ref="@AddModalDialog" Title="Add ContDataAttribData">
+    <div class="row">
+        <h3>Add</h3>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Name">Name</label>
+                <select typeof="number" class="form-select" aria-label="example" @bind=@contDataAttribData.ContDataAttribDefUid>
+                    <option value="0" selected>No current item</option>
+                    @foreach (var select in contDataAttribDefs)
+                    {
+                        <option value="@select.ContDataAttribDefUid">@select.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Name">Name</label>
+                <select typeof="number" class="form-select" aria-label="example" @bind=@contDataAttribData.ContTranUid>
+                    <option value="0" selected>No current item</option>
+                    @foreach (var select in contDatas)
+                    {
+                        <option value="@select.ContTranUid">@select.TranType</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="col-mb-4 mb-2">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="Value">Value</label>
+                <input type="text" class="form-control" id="Value" @bind="@contDataAttribData.Value" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <button class="btn btn-primary" @onclick="@(() => AddContDataAttribDatas())">Add</button>
+        </div>
+    </div>
+</ModalDialog>
+
+@code {
+
+
+    private TblContDataAttribData contDataAttribData = new TblContDataAttribData();
+    public TblContDataAttribDef ContDataAttribDefUid = new TblContDataAttribDef();
+    public TblContData ContTranUid = new TblContData();
+    private List<TblContDataAttribDef> contDataAttribDefs = new List<TblContDataAttribDef>();
+    private List<TblContData> contDatas = new List<TblContData>();
+    private List<TblContDataAttribData> contDataAttribDatas = new List<TblContDataAttribData>();
+
+
+    private ModalDialog EditModalDialog { get; set; }
+    private ModalDialog AddModalDialog { get; set; }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        contDataAttribDatas = await Http.GetFromJsonAsync<List<TblContDataAttribData>>("api/TblContDataAttribData");
+
+        contDataAttribDefs = await Http.GetFromJsonAsync<List<TblContDataAttribDef>>("api/TblContDataAttribDef");
+
+        contDatas = await Http.GetFromJsonAsync<List<TblContData>>("api/TblContData");
+
+    }
+
+    private async Task AddContDataAttribData()
+    {
+        contDataAttribData = new TblContDataAttribData();
+        await AddModalDialog.Open();
+
+    }
+
+    private async Task EditContDataAttribData(TblContDataAttribData contDataAttribData)
+    {
+        this.contDataAttribData = contDataAttribData;
+        await EditModalDialog.Open();
+    }
+
+
+    private async Task AddContDataAttribDatas()
+    {
+
+        await Http.PostAsJsonAsync("api/TblContDataAttribData", contDataAttribData);
+        contDataAttribDatas = await Http.GetFromJsonAsync<List<TblContDataAttribData>>("api/TblContDataAttribData");
+        AddModalDialog.Close();
+        StateHasChanged();
+
+    }
+
+    private async Task UpdateContDataAttribData()
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to update {contDataAttribData.ContDataAttribDataUid}?");
+
+        if (confirmed)
+        {
+        await JsRuntime.InvokeAsync<object>("alert", "Edit success");
+        await Http.PutAsJsonAsync("api/TblContDataAttribData/" + contDataAttribData.ContDataAttribDataUid, contDataAttribData);
+        contDataAttribDatas = await Http.GetFromJsonAsync<List<TblContDataAttribData>>("api/TblContDataAttribData");
+        EditModalDialog.Close();
+        StateHasChanged();
+        }
+        else
+        {
+            await JsRuntime.InvokeAsync<object>("alert", "Edit failed");
+        }
+    }
+
+    private async Task DeleteContDataAttribData(TblContDataAttribData item)
+    {
+
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+
+        if (confirmed)
+        {
+            await Http.DeleteAsync($"api/TblContDataAttribData/{item.ContDataAttribDataUid}");
+            await JsRuntime.InvokeAsync<object>("alert", "Delete success");
+            contDataAttribDatas = await Http.GetFromJsonAsync<List<TblContDataAttribData>>("api/TblContDataAttribData");
+            StateHasChanged();
+        }
+        else
+        {
+            await JsRuntime.InvokeAsync<object>("alert", "Delete failed");
+        }
+    }
+
+}
